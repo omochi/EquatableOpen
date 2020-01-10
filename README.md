@@ -11,7 +11,7 @@ func anyIsEqual(_ a: Any, _ b: Any) -> Bool
 ```
 
 It calls `==` if type of `a` and `b` are `Equatable`.
-It return `false` if not.
+It returns `false` if not.
 
 ## openEquatable
 
