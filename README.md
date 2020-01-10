@@ -30,3 +30,16 @@ It calls corresponding `init` to whether type of `anyValue` is `Equatable`.
 You can build `AnyEquatable`(see below) as custom implementation on it.
 
 - https://github.com/kateinoigakukun/AnyEquatable
+
+# Platforms
+
+## macOS
+## iOS
+## Linux
+
+- `$ swift test -Xlinker -export-dynamic`
+
+# Examples
+
+- https://github.com/omochi/EquatableOpenExample
+
