@@ -29,11 +29,11 @@ internal enum ValueWitnessTable {
             (value & Self.isNonInlineBit) == 0
         }
         
-        public var alignment: UInt {
-            UInt(value & Self.alignmentMask)
+        public var alignmentMask: UInt {
+            UInt(value & Self.alignmentMaskBitMask)
         }
         
-        public static let alignmentMask: UInt32 = 0x000000FF
+        public static let alignmentMaskBitMask: UInt32 = 0x000000FF
         public static let isNonInlineBit: UInt32 = 0x00020000
     }
 }
@@ -54,11 +54,11 @@ internal func projectBoxedOpaqueExistential(existential: UnsafeRawPointer,
     
     let boxAddress: UInt = existential.assumingMemoryBound(to: UInt.self).pointee
     
-    let alignment = flags.alignment
+    let alignmentMask = flags.alignmentMask
     
     //  StartOffset = ((sizeof(HeapObject) + align) & ~align)
     let heapHeaderSize = UInt(MemoryLayout<RefCountedStruct>.size)
-    let offset = (heapHeaderSize + alignment) & ~alignment
+    let offset = (heapHeaderSize + alignmentMask) & ~alignmentMask
     
     return UnsafeRawPointer(bitPattern: boxAddress + offset)!
 }

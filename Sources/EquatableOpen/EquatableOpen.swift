@@ -13,6 +13,15 @@ public func openEquatable<EO: EquatableOpener>(_ anyValue: Any, openerType: EO.T
 private func openEquatable<EO: EquatableOpener>(anyValueRef: UnsafePointer<Any>, openerType: EO.Type) -> EO {
     let symbols = Symbols.shared
     
+    let EOType = EO.self
+    
+    guard let witnessTableOfEOForEquatableOpener = symbols
+        .conformsToProtocol(type: EOType,
+                            protocol: symbols.equatableOpenerProtocolDescriptor) else
+    {
+        preconditionFailure("witnessOfEOForEquatableOpener")
+    }
+    
     let openerRef = UnsafeMutablePointer<EO>.allocate(capacity: 1)
     defer {
         openerRef.deallocate()
@@ -20,34 +29,33 @@ private func openEquatable<EO: EquatableOpener>(anyValueRef: UnsafePointer<Any>,
     
     let valueType = type(of: anyValueRef.pointee)
     
-    guard let witness = symbols.conformsToProtocol(type: valueType,
-                                                   protocol: symbols.equatableProtocolDescriptor) else
-    {
-        let value = projectBoxedOpaqueExistential(existential: UnsafeRawPointer(anyValueRef),
-                                                  type: valueType)
-        symbols.openEquatableT(result: UnsafeMutableRawPointer(openerRef),
-                               value: value,
-                               openerType: openerType,
-                               T: valueType,
-                               EO: openerType,
-                               witness_EO_EquatableOpener: UnsafeRawPointer(bitPattern: 0x8)!)
-        defer {
-            openerRef.deinitialize(count: 1)
-        }
-        
-        return openerRef.pointee
-    }
+    let value = projectBoxedOpaqueExistential(existential: UnsafeRawPointer(anyValueRef),
+                                              type: valueType)
     
-    // 黒魔術
-    return openerType.init(anyValueRef.pointee)
+    let witnessTableOfTForEquatable = symbols
+        .conformsToProtocol(type: valueType,
+                            protocol: symbols.equatableProtocolDescriptor)
+    
+    symbols.openEquatable(result: UnsafeMutableRawPointer(openerRef),
+                          value: value,
+                          valueType: valueType,
+                          openerType: openerType,
+                          witnessTableOfTForEquatable: witnessTableOfTForEquatable,
+                          witnessTableOfEOForEquatableOpener: witnessTableOfEOForEquatableOpener)
+    
+    return openerRef.move()
 }
 
 @_silgen_name("swift_openEquatable_T")
-public func _openEquatable<T, EO: EquatableOpener>(_ value: T, openerType: EO.Type) -> EO {
-    return openerType.init(value)
+public func _openEquatable<T, EO: EquatableOpener>(
+    resultRef: UnsafeMutablePointer<EO>, value: T, openerType: EO.Type)
+{
+    resultRef.initialize(to: openerType.init(value))
 }
 
 @_silgen_name("swift_openEquatable_Equatable")
-public func _openEquatable<T: Equatable, EO: EquatableOpener>(_ value: T, openerType: EO.Type) -> EO {
-    return openerType.init(value)
+public func _openEquatable<T: Equatable, EO: EquatableOpener>(
+    resultRef: UnsafeMutablePointer<EO>, value: T, openerType: EO.Type)
+{
+    resultRef.initialize(to: openerType.init(value))
 }
