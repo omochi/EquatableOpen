@@ -27,6 +27,6 @@ func openEquatable<EO: EquatableOpener>(_ anyValue: Any, openerType: EO.Type) ->
 You can open `Any`.
 It calls corresponding `init` to whether type of `anyValue` is `Equatable`.
 
-You can build `AnyEquatable` as custom implementation on it.
+You can build `AnyEquatable`(see below) as custom implementation on it.
 
 - https://github.com/kateinoigakukun/AnyEquatable
